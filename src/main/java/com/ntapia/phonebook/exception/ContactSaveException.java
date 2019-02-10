@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * Represent a problem to persist the Contact data
  */
-@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+@ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Error to persist contact data!")
 public class ContactSaveException extends RuntimeException{
 
     public ContactSaveException() {

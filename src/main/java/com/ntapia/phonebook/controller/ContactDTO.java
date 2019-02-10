@@ -3,6 +3,7 @@ package com.ntapia.phonebook.controller;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -11,16 +12,17 @@ import java.io.Serializable;
  */
 @Builder
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
-final class ContactDTO implements Serializable {
+class ContactDTO implements Serializable {
 
     private static final long serialVersionUID = 20190209L;
 
-    private final Long id;
+    private Long id;
 
-    private final String firstName;
+    private String firstName;
 
-    private final String lastName;
+    private String lastName;
 
-    private final String phone;
+    private String phone;
 }

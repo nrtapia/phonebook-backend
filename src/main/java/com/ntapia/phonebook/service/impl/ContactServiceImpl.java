@@ -1,6 +1,7 @@
 package com.ntapia.phonebook.service.impl;
 
 import com.ntapia.phonebook.dao.ContactDAO;
+import com.ntapia.phonebook.exception.ContactAlreadyExistException;
 import com.ntapia.phonebook.exception.ContactInvalidDataException;
 import com.ntapia.phonebook.exception.ContactSaveException;
 import com.ntapia.phonebook.exception.ContactSearchInvalidDataException;
@@ -35,11 +36,16 @@ public class ContactServiceImpl implements ContactService {
     @Transactional(Transactional.TxType.REQUIRED)
     @Override
     public Contact save(Contact contact) {
-        LOG.info("Persist contact info: {0}", contact);
+        LOG.info("Persist contact info: {}", contact);
 
         if (contact == null || StringUtils.isBlank(contact.getFirstName()) || StringUtils.isBlank(contact.getPhone())) {
             throw new ContactInvalidDataException();
         }
+
+        contactDAO.findByFirstNameAndLastName(contact.getFirstName(), contact.getLastName())
+                .ifPresent(persisted -> { throw new ContactAlreadyExistException(); });
+
+        contact.setTextData(buildSearchData(contact));
 
         try {
             return this.contactDAO.save(contact);
@@ -49,14 +55,18 @@ public class ContactServiceImpl implements ContactService {
         }
     }
 
+    private String buildSearchData(Contact contact) {
+        return contact.getFirstName().toUpperCase() + contact.getLastName().toUpperCase() + contact.getPhone();
+    }
+
     @Override
     public List<Contact> search(String term) {
-        LOG.info("Search contacts term: [{0}]", term);
+        LOG.info("Search contacts term: [{}]", term);
 
         if (StringUtils.isBlank(term)) {
             throw new ContactSearchInvalidDataException();
         }
 
-        return this.contactDAO.findAll();
+        return this.contactDAO.findTop100ByTextDataContainingOrderByFirstName(term.toUpperCase());
     }
 }
