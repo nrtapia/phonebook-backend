@@ -4,6 +4,7 @@ import com.ntapia.phonebook.dao.ContactDAO;
 import com.ntapia.phonebook.exception.ContactAlreadyExistException;
 import com.ntapia.phonebook.exception.ContactInvalidDataException;
 import com.ntapia.phonebook.exception.ContactSaveException;
+import com.ntapia.phonebook.exception.ContactSearchException;
 import com.ntapia.phonebook.exception.ContactSearchInvalidDataException;
 import com.ntapia.phonebook.model.Contact;
 import com.ntapia.phonebook.service.ContactService;
@@ -38,7 +39,8 @@ public class ContactServiceImpl implements ContactService {
     public Contact save(Contact contact) {
         LOG.info("Persist contact info: {}", contact);
 
-        if (contact == null || StringUtils.isBlank(contact.getFirstName()) || StringUtils.isBlank(contact.getPhone())) {
+        if (contact == null || StringUtils.isBlank(contact.getFirstName()) || StringUtils.isBlank(contact.getLastName())
+                || StringUtils.isBlank(contact.getPhone())) {
             throw new ContactInvalidDataException();
         }
 
@@ -67,6 +69,11 @@ public class ContactServiceImpl implements ContactService {
             throw new ContactSearchInvalidDataException();
         }
 
-        return this.contactDAO.findTop100ByTextDataContainingOrderByFirstName(term.toUpperCase());
+        try {
+            return this.contactDAO.findTop100ByTextDataContainingOrderByFirstName(term.toUpperCase());
+        } catch (Exception e) {
+            LOG.error("Error to search contacts", e);
+            throw new ContactSearchException();
+        }
     }
 }
