@@ -1,0 +1,75 @@
+version: "2"
+services:
+    db:
+      container_name: mysql-phonebook
+      image: mysql/mysql-server:5.7
+      volumes:
+            - mysql-data:/var/lib/mysql/data
+      environment:
+          - MYSQL_ROOT_PASSWORD=root
+          - MYSQL_DATABASE=phonebook
+#          - MYSQL_USER=root
+          - MYSQL_PASSWORD=root
+          - MYSQL_ROOT_HOST=%
+      ports:
+          - 3306:3306
+
+    myadmin-phonebook:
+      container_name: myadmin-phonebook
+      image: phpmyadmin/phpmyadmin:latest
+      links:
+          - db:myadmin
+      ports:
+          - 8181:80
+      environment:
+          - PMA_ARBITRARY=1
+      depends_on:
+          - db
+
+
+    phonebook-backend:
+      image: phonebook-backend
+      environment:
+          - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/phonebook?useSSL=false
+      depends_on:
+      - db
+      expose:
+        - "5000"
+
+    nginx-backend:
+      image: nginx:latest
+      container_name: nginx-backend
+      volumes:
+        - ./nginx-backend.conf:/etc/nginx/nginx.conf:ro
+      depends_on:
+        - phonebook-backend
+      ports:
+        - "4000:4000"
+
+
+    phonebook-frontend:
+          image: phonebook-challenge
+          depends_on:
+            - nginx-backend
+          environment:
+            - JAVA_OPTS=-DAPI_HOST=http://localhost:4000
+          ports:
+            - "8080"
+
+    nginx-frontend:
+          image: nginx:latest
+          container_name: nginx-frontend
+          volumes:
+            - ./nginx-frontend.conf:/etc/nginx/nginx.conf:ro
+          depends_on:
+            - phonebook-backend
+          ports:
+            - "80:80"
+
+
+volumes:
+  mysql-data:
+
+# docker-compose up -d --scale phonebook-backend=2 --scale phonebook-frontend=2
+# docker-compose stop
+# docker-compose rm
